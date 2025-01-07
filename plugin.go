@@ -89,6 +89,11 @@ func (p Plugin) Exec() error {
 	cmd := exec.Command("act", cmdArgs...)
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
+
+	droneOut := os.Getenv("DRONE_OUTPUT")
+	if droneOut != "" {
+		cmd.Env = append(os.Environ(), "DRONE_OUTPUT="+droneOut)
+	}
 	trace(cmd)
 
 	err := cmd.Run()
