@@ -1,14 +1,17 @@
 package main
 
 import (
+	"context"
 	"encoding/json"
 	"os"
 
 	plugin "github.com/drone-plugins/drone-github-actions"
 	"github.com/drone-plugins/drone-github-actions/daemon"
 	"github.com/drone-plugins/drone-github-actions/pkg/encoder"
+	"github.com/drone/plugin/cloner"
 	"github.com/joho/godotenv"
 	"github.com/pkg/errors"
+
 	"github.com/sirupsen/logrus"
 	"github.com/urfave/cli"
 )
@@ -163,6 +166,8 @@ func main() {
 }
 
 func run(c *cli.Context) error {
+	ctx := context.Background()
+
 	if c.String("action-name") == "" {
 		return errors.New("uses attribute must be set")
 	}
@@ -175,6 +180,24 @@ func run(c *cli.Context) error {
 	if err != nil {
 		return errors.Wrap(err, "env attribute is not of map type with key & value as string")
 	}
+
+	//-----------------------------------------------------------------
+	// 1) Clone the GH Action repository using `cloner`
+	//    e.g. user may specify "actions/github-script@v5"
+	//    We'll parse out the "repo" and "ref" if needed, but
+	//    for brevity let's treat the entire string as repo.
+	//-----------------------------------------------------------------
+	repoString := c.String("action-name") // e.g. "actions/github-script@v5"
+	// If needed, parse the part after '@' for ref:
+	// ...
+
+	clone := cloner.NewCache(cloner.NewDefault())
+	codedir, cloneErr := clone.Clone(ctx, repoString, "", "")
+	if cloneErr != nil {
+		logrus.Warnf("Failed to clone GH Action: %v", cloneErr)
+	}
+
+	os.Setenv("DRONE_GITHUB_CLONE_PATH", codedir)
 
 	plugin := plugin.Plugin{
 		Action: plugin.Action{
