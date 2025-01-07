@@ -4,6 +4,7 @@ package utils
 import (
 	"fmt"
 	"io/ioutil"
+	"os"
 	"path/filepath"
 
 	"gopkg.in/yaml.v2"
@@ -47,7 +48,7 @@ func ParseActionOutputs(root string) ([]string, error) {
 }
 
 func fileExists(path string) bool {
-	info, err := ioutil.Stat(path)
+	info, err := os.Stat(path)
 	if err != nil {
 		return false
 	}
