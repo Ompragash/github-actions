@@ -91,8 +91,8 @@ func (p Plugin) Exec() error {
 		return err
 	}
 
-	outputFilePath := "/tmp" //GetDirPath(outputFile)
-	containerOptions := fmt.Sprintf("-v %s:%s", outputFilePath, outputFilePath)
+	outputFilePath := GetDirPath(outputFile)
+	containerOptions := fmt.Sprintf("-v=%s:%s", outputFilePath, outputFilePath)
 
 	cmdArgs := []string{
 		"-W",
