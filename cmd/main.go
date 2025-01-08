@@ -190,6 +190,7 @@ func run(c *cli.Context) error {
 		logrus.Warnf("Invalid 'uses' format: %s", uses)
 		return fmt.Errorf("invalid 'uses' format: %s", uses)
 	}
+	logrus.Infof("Parsed 'uses' string. Repo: %s, Ref: %s", repoURL, ref)
 
 	// Clone the GH Action repository using `cloner` with parsed repo and ref
 	clone := cloner.NewCache(cloner.NewDefault())
@@ -197,6 +198,8 @@ func run(c *cli.Context) error {
 	if cloneErr != nil {
 		logrus.Warnf("Failed to clone GH Action: %v", cloneErr)
 		codedir = "" // in case of cloning failure, proceed without local clone with empty value
+	} else {
+		logrus.Infof("Successfully cloned GH Action to %s", codedir)
 	}
 
 	os.Setenv("DRONE_GITHUB_CLONE_PATH", codedir)
