@@ -3,11 +3,13 @@ package main
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"os"
 
 	plugin "github.com/drone-plugins/drone-github-actions"
 	"github.com/drone-plugins/drone-github-actions/daemon"
 	"github.com/drone-plugins/drone-github-actions/pkg/encoder"
+	"github.com/drone-plugins/drone-github-actions/utils"
 	"github.com/drone/plugin/cloner"
 	"github.com/joho/godotenv"
 	"github.com/pkg/errors"
