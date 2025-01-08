@@ -1,8 +1,10 @@
 package utils
 
 import (
+	"fmt"
 	"io/ioutil"
 	"os"
+	"runtime"
 
 	"github.com/pkg/errors"
 	"gopkg.in/yaml.v2"
@@ -21,12 +23,18 @@ type job struct {
 }
 
 type step struct {
-	Uses string            `yaml:"uses"`
-	With map[string]string `yaml:"with"`
-	Env  map[string]string `yaml:"env"`
+	Id    string            `yaml:"id,omitempty"`
+	Name  string            `yaml:"name,omitempty"`
+	Uses  string            `yaml:"uses"`
+	Run   string            `yaml:"run,omitempty"`
+	With  map[string]string `yaml:"with"`
+	Env   map[string]string `yaml:"env"`
+	Shell string            `yaml:"shell,omitempty"`
+	If    string            `yaml:"if,omitempty"`
 }
 
 const (
+	stepId        = "stepIdentifier"
 	workflowEvent = "push"
 	workflowName  = "drone-github-action"
 	jobName       = "action"
@@ -34,16 +42,18 @@ const (
 )
 
 func CreateWorkflowFile(ymlFile string, action string,
-	with map[string]string, env map[string]string) error {
+	with map[string]string, env map[string]string, outputFile string, outputVars []string) error {
 	j := job{
 		Name:   jobName,
 		RunsOn: runsOnImage,
 		Steps: []step{
 			{
+				Id:   stepId,
 				Uses: action,
 				With: with,
 				Env:  env,
 			},
+			getOutputVariables(stepId, outputFile, outputVars),
 		},
 	}
 	wf := &workflow{
@@ -72,4 +82,42 @@ func getWorkflowEvent() string {
 		return buildEvent
 	}
 	return "custom"
+}
+
+func getOutputVariables(prevStepId, outputFile string, outputVars []string) step {
+	skip := len(outputFile) == 0 || len(outputVars) == 0
+	cmd := ""
+	for _, outputVar := range outputVars {
+		cmd += fmt.Sprintf("%s=${{ steps.%s.outputs.%s }}\n", outputVar, prevStepId, outputVar)
+	}
+
+	if runtime.GOOS == "windows" {
+		cmd = fmt.Sprintf("python -c \"%s\"", outputVarWinScript(
+			outputVars, prevStepId, outputFile))
+	} else {
+		cmd = fmt.Sprintf("echo \"%s\" > %s", cmd, outputFile)
+	}
+
+	s := step{
+		Name: "output variables",
+		Run:  cmd,
+		If:   fmt.Sprintf("%t", !skip),
+	}
+	if runtime.GOOS == "windows" {
+		s.Shell = "powershell"
+	}
+	return s
+}
+
+func outputVarWinScript(outputVars []string, prevStepId, outputFile string) string {
+	script := ""
+	for idx, outputVar := range outputVars {
+		prefix := "out = "
+		if idx > 0 {
+			prefix += "out + "
+		}
+		script += fmt.Sprintf("%s'%s=${{ steps.%s.outputs.%s }}\\n';", prefix, outputVar, prevStepId, outputVar)
+	}
+	script += fmt.Sprintf("f = open('%s', 'wb'); f.write(bytes(out, 'UTF-8')); f.close()", outputFile)
+	return script
 }
