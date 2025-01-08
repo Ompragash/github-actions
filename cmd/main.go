@@ -181,20 +181,20 @@ func run(c *cli.Context) error {
 		return errors.Wrap(err, "env attribute is not of map type with key & value as string")
 	}
 
-	//-----------------------------------------------------------------
-	// 1) Clone the GH Action repository using `cloner`
-	//    e.g. user may specify "actions/github-script@v5"
-	//    We'll parse out the "repo" and "ref" if needed, but
-	//    for brevity let's treat the entire string as repo.
-	//-----------------------------------------------------------------
-	repoString := c.String("action-name") // e.g. "actions/github-script@v5"
-	// If needed, parse the part after '@' for ref:
-	// ...
+	// Parse the 'uses' string to get repo and ref
+	uses := c.String("action-name") // e.g. "actions/github-script@v5"
+	repoURL, ref, ok := utils.ParseLookup(uses)
+	if !ok {
+		logrus.Warnf("Invalid 'uses' format: %s", uses)
+		return fmt.Errorf("invalid 'uses' format: %s", uses)
+	}
 
+	// Clone the GH Action repository using `cloner` with parsed repo and ref
 	clone := cloner.NewCache(cloner.NewDefault())
-	codedir, cloneErr := clone.Clone(ctx, repoString, "", "")
+	codedir, cloneErr := clone.Clone(ctx, repoURL, ref, "")
 	if cloneErr != nil {
 		logrus.Warnf("Failed to clone GH Action: %v", cloneErr)
+		codedir = "" // in case of cloning failure, proceed without local clone with empty value
 	}
 
 	os.Setenv("DRONE_GITHUB_CLONE_PATH", codedir)
