@@ -102,6 +102,7 @@ func (p Plugin) Exec() error {
 		envFile,
 		"-b",
 		"--detect-event",
+		"--container-options='-v $(pwd):$(pwd)'",
 	}
 
 	// optional arguments
