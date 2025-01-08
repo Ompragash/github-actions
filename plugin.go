@@ -105,7 +105,7 @@ func (p Plugin) Exec() error {
 		"-b",
 		"--detect-event",
 		"--container-options",
-		containerOptions,
+		fmt.Sprintf("\"%s\"", containerOptions),
 	}
 
 	// optional arguments
