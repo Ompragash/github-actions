@@ -91,6 +91,8 @@ func (p Plugin) Exec() error {
 		return err
 	}
 
+	containerOptions := fmt.Sprintf("-v %s:%s", outputFile, outputFile)
+
 	cmdArgs := []string{
 		"-W",
 		workflowFile,
@@ -102,7 +104,7 @@ func (p Plugin) Exec() error {
 		envFile,
 		"-b",
 		"--detect-event",
-		"--container-options='-v $(pwd):$(pwd)'",
+		containerOptions,
 	}
 
 	// optional arguments
