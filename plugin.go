@@ -91,7 +91,8 @@ func (p Plugin) Exec() error {
 		return err
 	}
 
-	containerOptions := fmt.Sprintf("-v %s:%s", outputFile, outputFile)
+	outputFilePath := GetDirPath(outputFile)
+	containerOptions := fmt.Sprintf("-v %s:%s", outputFilePath, outputFilePath)
 
 	cmdArgs := []string{
 		"-W",
@@ -183,4 +184,8 @@ func fileExists(path string) bool {
         return false
     }
     return !info.IsDir()
+}
+
+func GetDirPath(filePath string) string {
+    return filepath.Dir(filePath)
 }
