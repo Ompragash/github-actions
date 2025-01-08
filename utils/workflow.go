@@ -141,6 +141,9 @@ func CreateWorkflowFile(ymlFile string, action string, with map[string]string, e
 		return errors.Wrap(err, "failed to marshal workflow to YAML")
 	}
 
+	// **Print the generated workflow YAML for debugging**
+	logrus.Infof("Generated workflow.yml:\n%s", string(out))
+
 	// Write the YAML to the specified file
 	if err := ioutil.WriteFile(ymlFile, out, 0644); err != nil {
 		logrus.Errorf("Failed to write workflow YAML file: %v", err)
