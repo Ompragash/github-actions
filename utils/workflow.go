@@ -53,7 +53,7 @@ func CreateWorkflowFile(ymlFile string, action string,
 				With: with,
 				Env:  env,
 			},
-			getOutputVariables(stepId, outputFile, outputVars),
+			setOutputVariables(stepId, outputFile, outputVars),
 		},
 	}
 	wf := &workflow{
@@ -84,7 +84,7 @@ func getWorkflowEvent() string {
 	return "custom"
 }
 
-func getOutputVariables(prevStepId, outputFile string, outputVars []string) step {
+func setOutputVariables(prevStepId, outputFile string, outputVars []string) step {
 	skip := len(outputFile) == 0 || len(outputVars) == 0
 	cmd := ""
 	for _, outputVar := range outputVars {
