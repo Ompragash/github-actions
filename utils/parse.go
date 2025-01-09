@@ -2,7 +2,6 @@ package utils
 
 import (
 	"fmt"
-	"io/ioutil"
 	"os"
 	"path/filepath"
 
@@ -14,7 +13,7 @@ type GHActionSpec struct {
 	Outputs map[string]interface{} `yaml:"outputs,omitempty"`
 }
 
-// parseActionOutputs locates `action.yml` or `action.yaml` in `root` and returns all top-level outputs.
+// ParseActionOutputs locates `action.yml` or `action.yaml` in `root` and returns all top-level outputs.
 func ParseActionOutputs(root string) ([]string, error) {
 	ymlPath := filepath.Join(root, "action.yml")
 	yamlPath := filepath.Join(root, "action.yaml")
@@ -26,11 +25,11 @@ func ParseActionOutputs(root string) ([]string, error) {
 	case fileExists(yamlPath):
 		actionFile = yamlPath
 	default:
-		logrus.Warnf("No action.yml or action.yaml found in %s; skipping output variable parsing.", root)
-		return nil, nil
+		logrus.Warnf("action.yml or action.yaml not found in %s. Skipping output variable processing.", root)
+		return []string{}, nil
 	}
 
-	raw, err := ioutil.ReadFile(actionFile)
+	raw, err := os.ReadFile(actionFile)
 	if err != nil {
 		return nil, fmt.Errorf("failed to read action file: %w", err)
 	}
@@ -47,7 +46,7 @@ func ParseActionOutputs(root string) ([]string, error) {
 	return keys, nil
 }
 
-// fileExists is a helper function that checks if the path is an existing file.
+// fileExists checks if the given path exists and is a file.
 func fileExists(path string) bool {
 	info, err := os.Stat(path)
 	if err != nil {

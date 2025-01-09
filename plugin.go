@@ -64,20 +64,22 @@ func (p Plugin) Exec() error {
 	codedir, cloneErr := clone.Clone(ctx, repoURL, ref, "")
 	if cloneErr != nil {
 		logrus.Warnf("Failed to clone GH Action: %v", cloneErr)
-		codedir = "" // in case of cloning failure, set codedir with empty value and continue
 	} else {
 		logrus.Infof("Successfully cloned GH Action to %s", codedir)
 	}
 
 	outputFile := os.Getenv("DRONE_OUTPUT")
+	outputVars := []string{}
 
-	// Get output variables from the cloned action
-	outputVars, err := utils.ParseActionOutputs(codedir)
-	if err != nil {
-		logrus.Warnf("Could not parse action.yml outputs from %s: %v", codedir, err)
+	if codedir != "" {
+		var err error
+		outputVars, err = utils.ParseActionOutputs(codedir)
+		if err != nil {
+			logrus.Warnf("Could not parse action.yml outputs from %s: %v", codedir, err)
+		}
 	}
 
-	if outputVars == nil || len(outputVars) == 0 {
+	if len(outputVars) == 0 {
 		logrus.Infof("No outputs were found in action.yml for repo: %s", repoURL)
 	}
 
