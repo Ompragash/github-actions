@@ -7,6 +7,7 @@ import (
 	"runtime"
 
 	"github.com/pkg/errors"
+	"github.com/sirupsen/logrus"
 	"gopkg.in/yaml.v2"
 )
 
@@ -85,6 +86,9 @@ func getWorkflowEvent() string {
 }
 
 func setOutputVariables(prevStepId, outputFile string, outputVars []string) step {
+	if len(outputVars) == 0 {
+		logrus.Infof("No output variables detected in action.yml; skipping output file generation.")
+	}
 	skip := len(outputFile) == 0 || len(outputVars) == 0
 	cmd := ""
 	for _, outputVar := range outputVars {

@@ -77,6 +77,10 @@ func (p Plugin) Exec() error {
 		logrus.Warnf("Could not parse action.yml outputs from %s: %v", codedir, err)
 	}
 
+	if outputVars == nil || len(outputVars) == 0 {
+		logrus.Infof("No outputs were found in action.yml for repo: %s", repoURL)
+	}
+
 	if err := utils.CreateWorkflowFile(workflowFile, p.Action.Uses,
 		p.Action.With, p.Action.Env, outputFile, outputVars); err != nil {
 		return err

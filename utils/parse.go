@@ -6,6 +6,7 @@ import (
 	"os"
 	"path/filepath"
 
+	"github.com/sirupsen/logrus"
 	"gopkg.in/yaml.v2"
 )
 
@@ -25,7 +26,8 @@ func ParseActionOutputs(root string) ([]string, error) {
 	case fileExists(yamlPath):
 		actionFile = yamlPath
 	default:
-		return nil, fmt.Errorf("no action.yml or action.yaml found in %s", root)
+		logrus.Warnf("No action.yml or action.yaml found in %s; skipping output variable parsing.", root)
+		return nil, nil
 	}
 
 	raw, err := ioutil.ReadFile(actionFile)
